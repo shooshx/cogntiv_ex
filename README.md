@@ -14,7 +14,7 @@
     - a test producer
 for easy testing of the client functionality.
 - Implemented server using asyncio TCP server
-- Implemented 2 ways to keep a constant rate of 1000 Hz, selected using the `HIGH_ACCURACY` constant
+- Implemented 2 ways to keep a constant rate of 1000 Hz, selected using the `HIGH_ACCURACY` constant:
     - using simple `asyncio.sleep(delay)`. On windows this has resolution of ~16 milli-sec so it's not 
     fit for the required resolution.
     - using a busy loop with `asyncio.sleep(0)`.` This may consume more CPU but proved to be more accurate.
@@ -22,13 +22,16 @@ for easy testing of the client functionality.
 ##### Client
 
 - Implemented again using asyncio TCP client.
-- Implemented 2 ways of tracking the rate of data arrival:
+- Implemented 2 ways of tracking the rate of data arrival, selected usng the `USE_ROLLING_RATE_TRACKER` constant:
     - Using a simple deque of the samples (not memory efficient)
     - Using a rolling stream calculation that uses O(1) memory
 - Assumed the data arrival rate stats are reported at the same cadence as the vector data - every 100 samples.
-- Output file is saved in the working directory to a csv file of this format:  
-  `<rate mean>,<rate std>,<50 mean values of data>... ,<50 std values of the data>...`
-
+- Results matrices in the client are not saved after the data analytics of a matrix was written to the output
+- Output file is saved in the working directory to a csv file with lines of this format:  
+  `<100 raw rate values>... ,<rate mean>,<rate std>,<50 mean values of data>... ,<50 std values of the data>...`
+- the raw rate values are written to the output only if the simple deque tracker is being used since the rolling
+  tracker does not save all the rates.
+  
 ### Running
 
 Server:  

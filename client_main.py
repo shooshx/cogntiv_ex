@@ -15,7 +15,7 @@ logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 VECTORS_BATCH_SIZE = 100
-
+USE_ROLLING_RATE_TRACKER = False
 
 class RateTrackerBase(abc.ABC):
     def __init__(self):
@@ -29,7 +29,10 @@ class RateTrackerBase(abc.ABC):
         now = time.perf_counter()
         if self.last_time is None:
             self.last_time = now
-            return  # first ever sample is skipped since we can't add a rate measure in the first sample
+            self._add(0)
+            # first ever sample is 0 since we can't add a rate measure in the first sample, but we don't want to have
+            # a different number of rates on the first line of the result file
+            return
         diff = now - self.last_time
         self.last_time = now
         if diff != 0:  # sanity
@@ -52,6 +55,9 @@ class RateTrackerSimple(RateTrackerBase):
 
     def reset(self):
         self._samples.clear()
+
+    def raw_rates(self):
+        return self._samples
 
     def stats(self):
         a = np.array(self._samples)
@@ -77,6 +83,10 @@ class RateTrackerRolling(RateTrackerBase):
     def size(self) -> int:
         return self._count
 
+    def raw_rates(self):
+        # not supported
+        return None
+
     def _add(self, v: float):
         self._count += 1
         mean_diff = (v - self._mean) / self._count
@@ -99,6 +109,8 @@ class DataAnalytics:
         self.reset()
 
     def reset(self):
+        # we use a list to accumulate the vector since doing this directly in a numpy array would be slow
+        # due to reallocations
         self._vectors = []
 
     def add(self, v):
@@ -132,8 +144,7 @@ async def main(argv):
     myaddr = writer.get_extra_info("sockname")
     logger.info(f"My address: {myaddr}")
 
-    # input_rate = RateTrackerSimple()
-    input_rate = RateTrackerRolling()
+    input_rate = RateTrackerRolling() if USE_ROLLING_RATE_TRACKER else RateTrackerSimple()
     accum_data = DataAnalytics()
 
     out_name = args.out_file if args.out_file is not None else f"out_{int(time.time())}.csv"
@@ -154,10 +165,14 @@ async def main(argv):
         if accum_data.size() >= VECTORS_BATCH_SIZE:
             # assume that we want to output the rate stats at the same cadence as the data analytics
             rate_mean, rate_std = input_rate.stats()
+            raw_rates = input_rate.raw_rates()
             logger.debug(f"data rate of last {input_rate.size()}: {rate_mean:.2f} Hz  std:{rate_std:.2f} Hz")
             data_means, data_std = accum_data.stats()
 
             def row_gen() -> float:  # output using generator to avoid copying everything to a long row
+                if raw_rates is not None:
+                    for d in raw_rates:
+                        yield d
                 yield rate_mean
                 yield rate_std
                 for d in data_means:
