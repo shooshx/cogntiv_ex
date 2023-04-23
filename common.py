@@ -2,7 +2,11 @@ import struct
 import pickle
 import asyncio
 
+
 class DataPacket:
+    """
+    serialize and deserialize data in a packet for sending on a stream
+    """
     HEADER_FORMAT = "<Q"
 
     def __init__(self, data=None):
