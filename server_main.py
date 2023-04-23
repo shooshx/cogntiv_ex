@@ -50,7 +50,6 @@ class VectorSendHandler:
     def __init__(self, producer):
         self.producer = producer
 
-
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         addr = writer.get_extra_info("peername")
         logger.info(f"Received connection from {addr}")

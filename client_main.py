@@ -32,9 +32,8 @@ class RateTrackerBase(abc.ABC):
             return  # first ever sample is skipped since we can't add a rate measure in the first sample
         diff = now - self.last_time
         self.last_time = now
-        if diff != 0:
+        if diff != 0:  # sanity
             self._add(1/diff)  # convert to frequency
-        # print(f"packet {self.size()}  {diff}")
 
 
 class RateTrackerSimple(RateTrackerBase):
@@ -100,16 +99,16 @@ class DataAnalytics:
         self.reset()
 
     def reset(self):
-        self.vectors = []
+        self._vectors = []
 
     def add(self, v):
-        self.vectors.append(v)
+        self._vectors.append(v)
 
     def size(self):
-        return len(self.vectors)
+        return len(self._vectors)
 
     def stats(self):
-        mat = np.array(self.vectors)
+        mat = np.array(self._vectors)
         # stats on the temporal axis
         means = np.mean(mat, axis=0)
         stds = np.std(mat, axis=0)
@@ -167,6 +166,7 @@ async def main(argv):
                     yield d
 
             csv_writer.writerow(row_gen())
+            # reset state accumulator to start from scratch the next batch
             input_rate.reset()
             accum_data.reset()
 
