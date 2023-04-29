@@ -5,7 +5,6 @@
 ##### General
 
 - The transport method implemented is a simple socket connection with a simple binary protocol.
-- "Mobile device" consideration that were taken is to try to be as memory and CPU efficient as possible.
 
 ##### Server
 
@@ -18,8 +17,9 @@ for easy testing of the client functionality.
     - using simple `asyncio.sleep(delay)`. On windows this has resolution of ~16 milli-sec so it's not 
     fit for the required resolution.
     - using a busy loop with `asyncio.sleep(0)`.` This may consume more CPU but proved to be more accurate.
+- known issue: exceptions are not propogated
 
-##### Client
+##### Python Client
 
 - Implemented again using asyncio TCP client.
 - Implemented 2 ways of tracking the rate of data arrival, selected usng the `USE_ROLLING_RATE_TRACKER` constant:
@@ -32,13 +32,46 @@ for easy testing of the client functionality.
 - the raw rate values are written to the output only if the simple deque tracker is being used since the rolling
   tracker does not save all the rates.
   
+##### C++ client
+
+- Implemented using boost::asio
+- Implementation closely follows the Python client functionality
+- Client "mobile device" consideration that were taken:
+    - try to be as memory and CPU efficient as possible.
+        - Best effort to do all memory allocation is done on startup
+    - Handling an external signal that happens just before the process is killed to close the process in a graceful way
+  
+### Building
+
+##### Windows: 
+
+- Download boost and unzip somewhere, set the envar `BOOST_ROOT` to the root where boost is. 
+No need to build boost binaries, only header lib is used.
+- Visual Studio 2022 is required, some C++20 features are used
+- Open cogntiv_cpp.sln in Visual Studio, build the project
+
+##### Linux
+TBA  
+  
 ### Running
 
 Server:  
-`python server_main.py [address] [port]`
+```
+> cd python
+> python server_main.py [address] [port]
+```
 
-Client:  
-`python client_main.py [address] [port]`
+Python Client:
+```
+> cd python  
+> python client_main.py [address] [port]
+```
+
+C++ Client
+```
+> cd cpp\x64_Debug
+> cpp_client.exe [address] [port]
+```
 
 ### Testing
 

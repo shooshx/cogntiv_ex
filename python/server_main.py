@@ -1,5 +1,6 @@
 import sys
 import time
+import traceback
 import argparse
 import asyncio
 import logging
@@ -51,33 +52,39 @@ class VectorSendHandler:
         self.producer = producer
 
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        addr = writer.get_extra_info("peername")
-        logger.info(f"Received connection from {addr}")
+        try:
+            addr = writer.get_extra_info("peername")
+            logger.info(f"Received connection from {addr}")
 
-        while True:
-            start_time = time.perf_counter()
-            data = self.producer.next_vec()
+            while True:
+                start_time = time.perf_counter()
+                data = self.producer.next_vec()
 
-            try:
-                common.DataPacket(data).serialize(writer)
-                await writer.drain()
-            except ConnectionError as e:
-                logger.info(f"Client disconnected: {str(e)}")
-                break
+                try:
+                    common.DataPacket(data).serialize(writer)
+                    await writer.drain()
+                except ConnectionError as e:
+                    logger.info(f"Client disconnected: {str(e)}")
+                    break
 
-            if not HIGH_ACCURACY:
-                # on windows this has resolution of 16 msec, which is not accurate enough
-                await asyncio.sleep(self.SEND_DELAY_SEC)
-            else:
-                # to be more accurate we do an async busy-wait
-                while True:
-                    await asyncio.sleep(0)
-                    now = time.perf_counter()
-                    if now - start_time >= self.SEND_DELAY_SEC:
-                        break
+                if not HIGH_ACCURACY:
+                    # on windows this has resolution of 16 msec, which is not accurate enough
+                    await asyncio.sleep(self.SEND_DELAY_SEC)
+                else:
+                    # to be more accurate we do an async busy-wait
+                    while True:
+                        await asyncio.sleep(0)
+                        now = time.perf_counter()
+                        if now - start_time >= self.SEND_DELAY_SEC:
+                            break
 
             # end_time = time.perf_counter()
             # logger.debug(f"send time: {(end_time-start_time}")
+        except Exception as e:
+            logger.error(e)
+            traceback.print_exc()
+
+            writer.close()
 
 
 def parse_args(argv):

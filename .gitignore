@@ -1,0 +1,8 @@
+.idea
+/cpp/.vs
+/cpp/x64_Debug
+/cpp/x64_Release
+/cpp/Win32_Debug
+/cpp/Win32_Release
+/python/__pycache__
+/cpp/*.user
