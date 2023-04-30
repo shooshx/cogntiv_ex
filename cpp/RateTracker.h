@@ -11,9 +11,11 @@ public:
     void got_packet()
     {
         const auto now = std::chrono::high_resolution_clock::now();
+        // first time?
         if (m_last_time == std::chrono::high_resolution_clock::time_point())
         {
             m_last_time = now;
+            // add a fake sample so that the first set of frequencies won't be missing one
             add(0);
         }
         auto diff = std::chrono::duration<double>(now - m_last_time).count();

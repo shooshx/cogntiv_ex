@@ -17,7 +17,6 @@ for easy testing of the client functionality.
     - using simple `asyncio.sleep(delay)`. On windows this has resolution of ~16 milli-sec so it's not 
     fit for the required resolution.
     - using a busy loop with `asyncio.sleep(0)`.` This may consume more CPU but proved to be more accurate.
-- known issue: exceptions are not propogated
 
 ##### Python Client
 
@@ -36,12 +35,12 @@ for easy testing of the client functionality.
 
 - Implemented using boost::asio for networking and fmt for logging
 - External dependencies are found using simple environment variables. In a non-exercise code base a real package
-  manager like conan should be used
-- Implementation closely follows the Python client functionality
+  manager like conan should be used.
+- Implementation closely follows the Python client functionality.
 - Client "mobile device" consideration that were taken:
     - try to be as memory and CPU efficient as possible.
-        - Best effort to do all memory allocation is done on startup
-    - Handling an external signal that happens just before the process is killed to close the process in a graceful way
+        - Best effort to do all memory allocation on startup.
+    - Handling an external signal that happens just before the process is killed to close the process in a graceful manner.
   
 ### Building
 
@@ -56,23 +55,23 @@ for easy testing of the client functionality.
 ##### Windows: 
 
 - Visual Studio 2022 is required, some C++20 features are used.
-- Open cogntiv_cpp.sln in Visual Studio, select configuration, build the project.
+- Open cogntiv_cpp.sln in Visual Studio, select a configuration, build the project.
 
 ##### Linux
 
-- install cmake if not already installed: `sudo apt install cmake` in Ubuntu
+- Install cmake if not already installed: `sudo apt install cmake` in Ubuntu
 - Install g++-11 (For C++20), see https://lindevs.com/install-gcc-on-ubuntu
 ```
-sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-sudo apt install -y g++-11
+> sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+> sudo apt install -y g++-11
 ```
-- Run the following commands:
+- Run the following commands from the project root:
 ```
-cd cpp
-mkdir build
-cd build
-cmake ..
-make
+> cd cpp
+> mkdir build
+> cd build
+> cmake ..
+> make
 ```
   
 ### Running
@@ -89,11 +88,18 @@ Python Client:
 > python client_main.py [address] [port]
 ```
 
-C++ Client
+C++ Client Windows
 ```
 > cd cpp\x64_Debug
 > cpp_client.exe [address] [port]
 ```
+
+C++ Client Linux
+```
+> cd cpp\build
+> cpp_client [address] [port]
+```
+
 
 ### Testing
 

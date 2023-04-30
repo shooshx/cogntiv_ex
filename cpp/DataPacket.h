@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <vector>
+#include <array>
 
 // Helper for the binary protocol
 // see also class DataPacketBin in common.py

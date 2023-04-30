@@ -1,9 +1,5 @@
 #include <cstdlib>
-#include <deque>
-#include <iostream>
 #include <chrono>
-#include <span>
-#include <fstream>
 #include <boost/asio.hpp>
 
 #include "common_util.h"
@@ -78,7 +74,6 @@ public:
         return { m_means, m_stds };
     }
     
-
 private:
     // contigous data for the entire matrix. major axis - vectors, minor axis - time
     // invariant: size of m_data = m_vec_len * m_count_vec
@@ -90,7 +85,6 @@ private:
     std::vector<double> m_means;
     std::vector<double> m_stds;
 };
-
 
 
 // handle data incoming from the network layer and perform all the needed processing
@@ -219,13 +213,11 @@ private:
 };
 
 
-
 class CmdOptions
 {
 public:
     static constexpr const char* DEFAULT_ADDRESS = "127.0.0.1";
     static constexpr const char* DEFAULT_PORT = "8888";
-
 
     CmdOptions(int argc, char* argv[])
     {
