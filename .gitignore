@@ -6,3 +6,4 @@
 /cpp/Win32_Release
 /python/__pycache__
 /cpp/*.user
+/cpp/build

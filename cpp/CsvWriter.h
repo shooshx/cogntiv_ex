@@ -1,6 +1,7 @@
 #pragma once
 #include <fstream>
 #include <chrono>
+#include <iomanip>
 #include "common_util.h"
 
 class CvsWriter
@@ -8,7 +9,7 @@ class CvsWriter
 public:
     CvsWriter()
     {
-        auto filename = std::format("out_{}.csv", std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+        auto filename = fmt::format("out_{}.csv", std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
         log().info("Opening output {}", filename);
         m_of = std::ofstream(filename.c_str());
         m_of << std::setprecision(std::numeric_limits<double>::digits10 + 1);
@@ -20,7 +21,8 @@ public:
         ((m_of << v << ","), ...);
     }
 
-    void addv(const std::ranges::range auto& vv)
+    template<typename T>
+    void addv(const T& vv)
     {
         for (const auto v : vv)
             m_of << v << ",";

@@ -27,15 +27,17 @@ public:
         // m_vec_len not set since this is only a hint
     }
 
-    size_t add(std::span<std::byte> raw_data)
+    size_t add(const std::vector<std::byte>& raw_data)
     {
-        REQUIRE(raw_data.size() % sizeof(double) == 0, "wrong size data");
+        REQUIRE_FMT(raw_data.size() % sizeof(double) == 0, "wrong size data, should be a whole multiple of double, got{}", raw_data.size());
         auto count_values = raw_data.size() / sizeof(double);
         // once we started adding vectors, all of them should be the same size
         if (m_vec_len != 0)
-            REQUIRE(count_values == m_vec_len, "Unexpected number of values");
+            REQUIRE_FMT(count_values == m_vec_len, "Unexpected number of values got:{}, expected:{}", count_values, m_vec_len);
         else
             m_vec_len = count_values;
+
+        // append received data
         auto prev_size = m_data.size();
         m_data.resize(prev_size + count_values);
         auto copy_start = &m_data[prev_size];
@@ -78,7 +80,8 @@ public:
     
 
 private:
-    // contigous data of the entire matrix
+    // contigous data for the entire matrix. major axis - vectors, minor axis - time
+    // invariant: size of m_data = m_vec_len * m_count_vec
     std::vector<double> m_data;
     size_t m_vec_len = 0;
     size_t m_count_vec = 0;
@@ -93,6 +96,7 @@ private:
 // handle data incoming from the network layer and perform all the needed processing
 class DataHandler
 {
+private:
     static constexpr const size_t EXPECTED_VEC_SIZE = 50;
     static constexpr const size_t VECTORS_BATCH_SIZE = 100;
 
@@ -103,7 +107,7 @@ public:
         m_input_rate.size_hint(VECTORS_BATCH_SIZE);
     }
 
-    void handle_data(std::span<std::byte> raw_data)
+    void handle_data(const std::vector<std::byte>& raw_data)
     {
         m_input_rate.got_packet();
         auto count_vec = m_data_accumulator.add(raw_data);
@@ -127,7 +131,7 @@ public:
 
 private:
     DataAnalytics m_data_accumulator;
-    RateTrackerSimple m_input_rate;
+    RateTracker m_input_rate;
     CvsWriter m_output;
 };
 
@@ -201,7 +205,7 @@ private:
                     return;
                 }
 
-                m_data_handler.handle_data(std::span(m_read_msg.m_data));
+                m_data_handler.handle_data(m_read_msg.m_data);
                 do_read_header();
             });
     }

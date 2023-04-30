@@ -64,3 +64,5 @@ public:
 private:
     std::vector<double> m_freq_samples;
 };
+
+using RateTracker = RateTrackerSimple;

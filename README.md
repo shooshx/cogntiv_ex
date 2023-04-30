@@ -34,7 +34,9 @@ for easy testing of the client functionality.
   
 ##### C++ client
 
-- Implemented using boost::asio
+- Implemented using boost::asio for networking and fmt for logging
+- External dependencies are found using simple environment variables. In a non-exercise code base a real package
+  manager like conan should be used
 - Implementation closely follows the Python client functionality
 - Client "mobile device" consideration that were taken:
     - try to be as memory and CPU efficient as possible.
@@ -43,15 +45,35 @@ for easy testing of the client functionality.
   
 ### Building
 
+- Install boost headers
+    - Download from https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_1_82_0.zip
+    - unzip and set the envar `BOOST_ROOT` to the root of where it was unzipped  
+    - No need to build boost binaries, only header lib is used.    
+- Install fmt headers
+    - Download from https://github.com/fmtlib/fmt/releases/download/9.1.0/fmt-9.1.0.zip
+    - unzip and set envar `FMT_ROOT` to the root where it was unzipped    
+
 ##### Windows: 
 
-- Download boost and unzip somewhere, set the envar `BOOST_ROOT` to the root where boost is. 
-No need to build boost binaries, only header lib is used.
-- Visual Studio 2022 is required, some C++20 features are used
-- Open cogntiv_cpp.sln in Visual Studio, build the project
+- Visual Studio 2022 is required, some C++20 features are used.
+- Open cogntiv_cpp.sln in Visual Studio, select configuration, build the project.
 
 ##### Linux
-TBA  
+
+- install cmake if not already installed: `sudo apt install cmake` in Ubuntu
+- Install g++-11 (For C++20), see https://lindevs.com/install-gcc-on-ubuntu
+```
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo apt install -y g++-11
+```
+- Run the following commands:
+```
+cd cpp
+mkdir build
+cd build
+cmake ..
+make
+```
   
 ### Running
 
@@ -78,6 +100,7 @@ C++ Client
 - Tested on Windows with Python 3.11
 - Tested on Linux with WSL2 with Python 3.10
 - Tested with 3 concurrent clients with no reduced rate accuracy
+- Tested the C++ client produces the same results as the Python client (up to the last 2 least significant digits)
 
 Typical data arrival rate stats:
 ```
@@ -92,4 +115,6 @@ Typical data arrival rate stats:
 - Added unit-test for the 2 rate trackers to make sure they do the same thing.
 - I tried using some socket options like `TCP_NODELAY`, `SO_SNDBUF` to make the networking 
 faster and more predictable but that did not have any effect.
+- I tried playing with the server process priority to try to make the send rate more predictable
+but that also had no effect.
 

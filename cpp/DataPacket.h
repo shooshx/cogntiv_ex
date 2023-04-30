@@ -4,7 +4,8 @@
 #include <cstdlib>
 #include <cstring>
 
-// see also DataPacketBin in common.py
+// Helper for the binary protocol
+// see also class DataPacketBin in common.py
 class DataPacket
 {
 public:
@@ -17,7 +18,6 @@ public:
         m_data.resize(sz);
         return sz;
     }
-
 
 public:
     std::array<char, HEADER_LENGTH> m_header;
